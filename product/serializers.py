@@ -31,3 +31,13 @@ class ReviewDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = Review
         fields = '__all__'
+
+class ProductListReviewSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Product
+        fields = 'id title description price category review_text average_score'.split()
+
+class CategoriesProductsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Category
+        fields = 'id name products_count'.split()
