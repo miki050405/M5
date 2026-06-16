@@ -2,11 +2,11 @@ from django.urls import path
 from product import views
 
 urlpatterns = [
-    path('categories/', views.category_list_create_api_view),
-    path('categories/<int:id>/', views.category_detail_api_view),
-    path('products/', views.product_list_create_api_view),
-    path('products/<int:id>/', views.product_detail_api_view),
-    path('reviews/', views.review_list_create_api_view),
-    path('reviews/<int:id>/', views.review_detail_api_view),
-    path('products/reviews/', views.product_list_review_api_view),
+    path('categories/', views.CategoryListCreateApiView.as_view()),
+    path('categories/<int:id>/', views.CategoryDetailAPIView.as_view()),
+    path('products/', views.ProductListCreateApiView.as_view()),
+    path('products/<int:id>/', views.ProductDetailApiView.as_view()),
+    path('reviews/', views.ReviewListCreateApiView.as_view()),
+    path('reviews/<int:id>/', views.ReviewDetailApiView.as_view()),
+    path('products/reviews/', views.ProductListReviewApiView.as_view()),
 ]
