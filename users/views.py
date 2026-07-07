@@ -1,31 +1,31 @@
-from django.shortcuts import render
 
-# Create your views here.
-from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
-from django.contrib.auth.models import User
 from .serializers import RegisterSerializer, AuthSerializer, ConfirmationSerializer
 from django.contrib.auth import authenticate
 from rest_framework.authtoken.models import Token
-from .models import ConfirmCode
+from .models import ConfirmCode, CustomUser
 import secrets
 from rest_framework.exceptions import ValidationError
 from django.db import transaction
-from rest_framework.views import APIView
+from rest_framework.generics import CreateAPIView
 
-class RegistrationApiView(APIView):
+class RegistrationApiView(CreateAPIView):
+    serializer_class = RegisterSerializer
+
     def post(self, request):
         serializer = RegisterSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        username = serializer.validated_data['username']
+        email = serializer.validated_data['email']
         password = serializer.validated_data['password']
+        phone_number = serializer.validated_data.get('phone_number','')
 
         with transaction.atomic():
-            user = User.objects.create_user(
-                username=username,
+            user = CustomUser.objects.create_user(
+                email=email,
                 password=password,
+                phone_number = phone_number,
                 is_active=False
             )
             
@@ -38,7 +38,9 @@ class RegistrationApiView(APIView):
         return Response(status=status.HTTP_201_CREATED,
                         data={'user_id': user.id, 'code':code})
 
-class ConfirmationApiView(APIView):
+class ConfirmationApiView(CreateAPIView):
+    serializer_class = ConfirmationSerializer
+
     def post(self, request):
         serializer = ConfirmationSerializer(data = request.data)
         serializer.is_valid(raise_exception=True)
@@ -57,15 +59,16 @@ class ConfirmationApiView(APIView):
         return Response(status=status.HTTP_200_OK)
 
 
-class AuthorizationApiView(APIView):
+class AuthorizationApiView(CreateAPIView):
+    serializer_class = AuthSerializer
     def post(self, request):
         serializer = AuthSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        username = serializer.validated_data['username']
+        email = serializer.validated_data['email']
         password = serializer.validated_data['password']
 
-        user = authenticate(username=username, password=password)
+        user = authenticate(email=email, password=password)
         if user is not None:
             try:
                 token = Token.objects.get(user=user)
@@ -73,5 +76,4 @@ class AuthorizationApiView(APIView):
                 token = Token.objects.create(user=user)
             return Response(data={'key': token.key})
         return Response(status=status.HTTP_401_UNAUTHORIZED)
-
 

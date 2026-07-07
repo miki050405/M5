@@ -1,22 +1,21 @@
 from rest_framework import serializers
-from django.contrib.auth.models import User
+from .models import CustomUser
 from rest_framework.exceptions import ValidationError
 
-
 class AuthSerializer(serializers.Serializer):
-    username = serializers.CharField(max_length=150)
+    email = serializers.EmailField()
     password = serializers.CharField()
-
 
 class RegisterSerializer(serializers.Serializer):
-    username = serializers.CharField(max_length=150)
+    email = serializers.EmailField()
     password = serializers.CharField()
+    phone_number = serializers.CharField(max_length = 15,required=False)
 
-    def validate_username(self, username):
+    def validate_email(self, email):
         try:
-            User.objects.get(username=username)
-        except User.DoesNotExist:
-            return username
+            CustomUser.objects.get(email=email)
+        except CustomUser.DoesNotExist:
+            return email
         raise ValidationError('User already exists!')
     
 class ConfirmationSerializer(serializers.Serializer):
