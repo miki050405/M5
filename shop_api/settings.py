@@ -54,6 +54,13 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+        # 'rest_framework.authentication.SessionAuthentication',
+    ],
+}
+
 ROOT_URLCONF = 'shop_api.urls'
 
 TEMPLATES = [
@@ -126,3 +133,13 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 AUTH_USER_MODEL = 'users.CustomUser'
+
+SWAGGER_SETTINGS = {
+    "SECURITY_DEFINITIONS":{
+        "Authorization":{
+            "type":"apiKey",
+            "name":"Authorization",
+            "in":"header"
+        }
+    }
+}

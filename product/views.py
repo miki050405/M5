@@ -4,6 +4,7 @@ from .serializers import (CategoryListSerializer, CategoryDetailSerializer,
                           ProductListReviewSerializer, CategoriesProductsSerializer, 
                           CategoryValidateSerializer, ProductValidateSerializer, ReviewValidateSerializer)
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, ListAPIView
+from common.permissions import IsAuth, IsAnon, CanEditWithIn15Minutes, IsModerator
 
 class CategoryDetailAPIView(RetrieveUpdateDestroyAPIView):
     queryset = Category.objects.all()
@@ -23,20 +24,32 @@ class ProductListCreateApiView(ListCreateAPIView):
     queryset = Product.objects.all()
     serializer_class = ProductValidateSerializer
 
+    def get_permissions(self):
+        if self.request.user.is_authenticated and self.request.user.is_staff:
+            permission_classes = [IsModerator]
+        else:
+            permission_classes = [IsAuth | IsAnon]
+        return [permission() for permission in permission_classes]
+
     def get_serializer_class(self):
         if self.request.method == 'GET':
             return ProductListSerializer
         return self.serializer_class
+    
+    def perform_create(self, serializer):
+        return serializer.save(owner = self.request.user)
 
 class ProductDetailApiView(RetrieveUpdateDestroyAPIView):
     queryset = Product.objects.all()
     serializer_class = ProductValidateSerializer
     lookup_field = 'id'
+    permission_classes = [IsAnon | (CanEditWithIn15Minutes & IsAuth) | IsModerator]
 
     def get_serializer_class(self):
         if self.request.method == 'GET':
             return ProductDetailSerializer
         return self.serializer_class
+    
 
 class ReviewListCreateApiView(ListCreateAPIView):
     queryset = Review.objects.all()
