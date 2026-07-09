@@ -1,7 +1,11 @@
-
 from rest_framework.response import Response
 from rest_framework import status
-from .serializers import RegisterSerializer, AuthSerializer, ConfirmationSerializer
+from .serializers import (
+    RegisterSerializer, 
+    AuthSerializer, 
+    ConfirmationSerializer,
+    CustomTokenObtainPairSerializer
+)
 from django.contrib.auth import authenticate
 from rest_framework.authtoken.models import Token
 from .models import ConfirmCode, CustomUser
@@ -9,6 +13,10 @@ import secrets
 from rest_framework.exceptions import ValidationError
 from django.db import transaction
 from rest_framework.generics import CreateAPIView
+from rest_framework_simplejwt.views import TokenObtainPairView
+
+class CustomTokenObtainPairView(TokenObtainPairView):
+    serializer_class = CustomTokenObtainPairSerializer
 
 class RegistrationApiView(CreateAPIView):
     serializer_class = RegisterSerializer

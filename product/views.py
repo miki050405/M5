@@ -5,6 +5,9 @@ from .serializers import (CategoryListSerializer, CategoryDetailSerializer,
                           CategoryValidateSerializer, ProductValidateSerializer, ReviewValidateSerializer)
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, ListAPIView
 from common.permissions import IsAuth, IsAnon, CanEditWithIn15Minutes, IsModerator
+from common.validators import validate_age
+from rest_framework.response import Response
+from rest_framework import status
 
 class CategoryDetailAPIView(RetrieveUpdateDestroyAPIView):
     queryset = Category.objects.all()
@@ -37,7 +40,8 @@ class ProductListCreateApiView(ListCreateAPIView):
         return self.serializer_class
     
     def perform_create(self, serializer):
-        return serializer.save(owner = self.request.user)
+        validate_age(self.request)
+        return serializer.save(owner_id = self.request.auth.get("user_id"))
 
 class ProductDetailApiView(RetrieveUpdateDestroyAPIView):
     queryset = Product.objects.all()
