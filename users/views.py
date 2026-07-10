@@ -8,12 +8,13 @@ from .serializers import (
 )
 from django.contrib.auth import authenticate
 from rest_framework.authtoken.models import Token
-from .models import ConfirmCode, CustomUser
+from .models import CustomUser
 import secrets
 from rest_framework.exceptions import ValidationError
 from django.db import transaction
 from rest_framework.generics import CreateAPIView
 from rest_framework_simplejwt.views import TokenObtainPairView
+from django.core.cache import cache
 
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
@@ -38,10 +39,7 @@ class RegistrationApiView(CreateAPIView):
             )
             
             code = str(secrets.randbelow(900000) + 100000)
-            ConfirmCode.objects.create(
-                user = user,
-                code = code
-            )
+            cache.set(f"code:{user.id}", code, 300)
 
         return Response(status=status.HTTP_201_CREATED,
                         data={'user_id': user.id, 'code':code})
@@ -53,17 +51,17 @@ class ConfirmationApiView(CreateAPIView):
         serializer = ConfirmationSerializer(data = request.data)
         serializer.is_valid(raise_exception=True)
 
+        user_id = serializer.validated_data['user_id']
         code = serializer.validated_data['code']
 
-        try:
-            conf_code = ConfirmCode.objects.get(code = code)
-        except ConfirmCode.DoesNotExist:
+        conf_code = cache.get(f"code:{user_id}")
+        if (conf_code is None) or (conf_code != code):
             raise ValidationError('Код неверный. Повторите попытку!')
         
-        user = conf_code.user
+        user = CustomUser.objects.get(id = user_id)
+        cache.delete(f"code:{user_id}")
         user.is_active = True
         user.save()
-        conf_code.delete()
         return Response(status=status.HTTP_200_OK)
 
 

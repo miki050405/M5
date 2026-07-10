@@ -29,3 +29,4 @@ class RegisterSerializer(serializers.Serializer):
     
 class ConfirmationSerializer(serializers.Serializer):
     code = serializers.CharField(max_length = 6, min_length = 6)
+    user_id = serializers.IntegerField()
