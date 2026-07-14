@@ -15,6 +15,7 @@ from django.db import transaction
 from rest_framework.generics import CreateAPIView
 from rest_framework_simplejwt.views import TokenObtainPairView
 from django.core.cache import cache
+from django.shortcuts import get_object_or_404
 
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
@@ -55,10 +56,14 @@ class ConfirmationApiView(CreateAPIView):
         code = serializer.validated_data['code']
 
         conf_code = cache.get(f"code:{user_id}")
-        if (conf_code is None) or (conf_code != code):
+
+        if conf_code is None:
+            raise ValidationError("Такого кода нет, возможно, истек срок ипользования.")
+        
+        if conf_code != code:
             raise ValidationError('Код неверный. Повторите попытку!')
         
-        user = CustomUser.objects.get(id = user_id)
+        user = get_object_or_404(CustomUser, id = user_id)
         cache.delete(f"code:{user_id}")
         user.is_active = True
         user.save()
