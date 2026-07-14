@@ -39,5 +39,6 @@ def product_status():
 def count_reviews(product_id):
     product = Product.objects.get(id=product_id)
     count = product.reviews.count()
-    print(f"У продукта {product.title} теперь {count} отзывов")
-    return count
+    result = f"У продукта {product.title} теперь {count} отзывов"
+    print(result)
+    return result
