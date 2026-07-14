@@ -8,8 +8,7 @@ class CustomUserAdmin(UserAdmin):
     list_display = ["id", "email", "is_active"]
     list_editable = ["is_active"]
     ordering = ["email"]
-    readonly_fields = ["birthdate"]
-
+    readonly_fields = []
     fieldsets = (
         (None, {"fields": ("email", "password", "is_active", "birthdate")}),
         ("Important dates", {"fields": ("last_login",)}),

@@ -8,6 +8,7 @@ from common.permissions import IsAuth, IsAnon, CanEditWithIn15Minutes, IsModerat
 from common.validators import validate_age
 from rest_framework.response import Response
 from rest_framework import status
+from product.tasks import new_review_email, count_reviews
 
 class CategoryDetailAPIView(RetrieveUpdateDestroyAPIView):
     queryset = Category.objects.all()
@@ -59,6 +60,11 @@ class ReviewListCreateApiView(ListCreateAPIView):
     queryset = Review.objects.all()
     serializer_class = ReviewListSerializer
 
+    def perform_create(self, serializer):
+        review = serializer.save()
+        count_reviews.delay(review.product_id)
+        new_review_email.delay(review.id)
+    
     def get_serializer_class(self):
         if self.request.method in ['POST']:
             return ReviewValidateSerializer

@@ -16,6 +16,7 @@ from rest_framework.generics import CreateAPIView
 from rest_framework_simplejwt.views import TokenObtainPairView
 from django.core.cache import cache
 from django.shortcuts import get_object_or_404
+from users.tasks import send_email, add
 
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
@@ -41,6 +42,8 @@ class RegistrationApiView(CreateAPIView):
             
             code = str(secrets.randbelow(900000) + 100000)
             cache.set(f"code:{user.id}", code, 300)
+
+            send_email.delay(code, email)
 
         return Response(status=status.HTTP_201_CREATED,
                         data={'user_id': user.id, 'code':code})
@@ -73,6 +76,8 @@ class ConfirmationApiView(CreateAPIView):
 class AuthorizationApiView(CreateAPIView):
     serializer_class = AuthSerializer
     def post(self, request):
+        
+        add.delay(2,2)
         serializer = AuthSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
@@ -87,4 +92,3 @@ class AuthorizationApiView(CreateAPIView):
                 token = Token.objects.create(user=user)
             return Response(data={'key': token.key})
         return Response(status=status.HTTP_401_UNAUTHORIZED)
-
