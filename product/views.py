@@ -54,7 +54,6 @@ class ProductDetailApiView(RetrieveUpdateDestroyAPIView):
         if self.request.method == 'GET':
             return ProductDetailSerializer
         return self.serializer_class
-    
 
 class ReviewListCreateApiView(ListCreateAPIView):
     queryset = Review.objects.all()

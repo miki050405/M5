@@ -10,6 +10,6 @@ class CustomUserAdmin(UserAdmin):
     ordering = ["email"]
     readonly_fields = []
     fieldsets = (
-        (None, {"fields": ("email", "password", "is_active", "birthdate")}),
+        (None, {"fields": ("email", "password","first_name","last_name","registration_source","is_active", "birthdate")}),
         ("Important dates", {"fields": ("last_login",)}),
     )
